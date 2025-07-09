@@ -1,0 +1,55 @@
+{
+  "expo": {
+    "name": "muslimbud",
+    "slug": "muslimbud",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "scheme": "com.sadat103.muslimbud",
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sadat103.muslimbud"
+    },
+    "android": {
+      "package": "com.sadat103.muslimbud",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "muslimbud.myapp.io",
+              "pathPrefix": "/records"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "31ae58d7-80ce-4c08-a307-0944d8ad6640"
+      }
+    },
+    "owner": "sadat103"
+  },
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-2284129955503680~3475331339",
+    "ios_app_id": "ca-app-pub-2284129955503680~3475331339"
+  }
+}

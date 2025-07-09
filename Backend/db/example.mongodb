@@ -1,0 +1,187 @@
+// MongoDB Playground
+// To disable this template go to Settings | MongoDB | Use Default Template For Playground.
+// Make sure you are connected to enable completions and to be able to run a playground.
+// Use Ctrl+Space inside a snippet or a string literal to trigger completions.
+
+// Select the database to use.
+use("muslimpro");
+
+// The drop() command destroys all data from a collection.
+// Make sure you run it against the correct database and collection.
+//db.sales.drop();
+
+db.personalinfos.findOne({
+  _id: ObjectId("65319039bffb4d8d331e8b1f"),
+});
+db.conversations.findOneAndUpdate(
+  {
+    $and: [
+      { "user.id": ObjectId("65283a6d1cc2a766458d2b1d") },
+      { _id: ObjectId("64fc1d8656cf17ec78b1621d") },
+    ],
+  },
+  [
+    {
+      $set: {
+        updatedAt: new Date(),
+      },
+    },
+    {
+      $set: {
+        delay: {
+          $divide: [
+            { $subtract: [new Date(), "$updatedAt"] },
+            86400000, // Number of milliseconds in a day
+          ],
+        },
+      },
+    },
+  ],
+  {
+    new: true,
+  }
+);
+
+db.conversations.aggregate([
+  {
+    $match: { "user.id": ObjectId("65319039bffb4d8d3c1e8b1f") },
+  },
+  {
+    $lookup: {
+      from: "messages",
+      localField: "_id",
+      foreignField: "conversation_id",
+      as: "messageList",
+    },
+  },
+  {
+    $addFields: {
+      delay: {
+        $divide: [
+          { $subtract: [new Date(), "$updatedAt"] },
+          86400000, // Number of milliseconds in a day
+        ],
+      },
+    },
+  },
+  {
+    $addFields: {
+      isActive: {
+        $cond: {
+          if: { $lt: ["$delay", 1] },
+          then: "Today",
+          else: {
+            $cond: {
+              if: {
+                $and: [{ $gt: ["$delay", 1] }, { $lt: ["$delay", 2] }],
+              },
+              then: "Yesterday",
+              else: "Previous 30 Days",
+            },
+          },
+        },
+      },
+    },
+  },
+  {
+    $sort: { delay: 1 },
+  },
+  {
+    $group: {
+      _id: "$isActive",
+      conversation: { $push: "$$ROOT" },
+      total_conversation: { $count: {} },
+    },
+  },
+]);
+
+db.conversations.aggregate([
+  {
+    $match: { "user.id": ObjectId("65319039bffb4d8d3c1e8b1f") },
+  },
+  {
+    $lookup: {
+      from: "messages",
+      localField: "_id",
+      foreignField: "conversation_id",
+      as: "messageList",
+    },
+  },
+  {
+    $addFields: {
+      delay: {
+        $ceil: {
+          $divide: [
+            { $subtract: [new Date(), "$updatedAt"] },
+            86400000, // Number of milliseconds in a day
+          ],
+        },
+      },
+    },
+  },
+  {
+    $group: {
+      _id: "$delay",
+      conversation: { $push: "$$ROOT" },
+      total_conversation: { $count: {} },
+    },
+  },
+]);
+
+db.conversations.aggregate([
+  {
+    $match: { "user.id": ObjectId("651b1e312b01fc0f461561b6") },
+  },
+  {
+    $project: {
+      dateDifference: {
+        $divide: [
+          { $subtract: [new Date(), "$createdAt"] },
+          86400000, // Number of milliseconds in a day
+        ],
+      },
+      dateDifferenceInDays: {
+        $cond: {
+          if: {
+            $gt: [
+              {
+                $divide: [
+                  { $subtract: ["$updatedAt", new Date()] },
+                  86400000, // Number of milliseconds in a day
+                ],
+              },
+              1,
+            ],
+          },
+          then: "Today",
+          else: "Yesterday",
+        },
+      },
+    },
+  },
+]);
+
+db.conversations.aggregate([
+  // First Stage
+  {
+    $bucket: {
+      groupBy: "$name", // Field to group by
+      boundaries: ["sadat", "unknown"], // Boundaries for the buckets
+      default: "Other", // Bucket ID for documents which do not fall into a bucket
+      output: {
+        // Output for each bucket
+        count: { $sum: 1 },
+        artists: {
+          $push: {
+            name: "$user.id",
+            active: "$isActive",
+          },
+        },
+      },
+    },
+  },
+  // Second Stage
+  {
+    $match: { count: { $gt: 1 } },
+  },
+]);
